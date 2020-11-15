@@ -31,6 +31,17 @@
       </el-table-column>
     </el-table>
 
+    <!-- 分页器 -->
+    <el-pagination
+      background
+      layout="prev, pager, next"
+      :total="info.total"
+      :page-size="info.size"
+      :current-page.sync="info.page"
+      @current-change="pageChange"
+    >
+    </el-pagination>
+
     <!-- 表单 -->
     <el-dialog
       @open="openFn"
@@ -39,7 +50,7 @@
       :visible.sync="info.isShow"
     >
       <el-form :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="角色" prop="rolename">
+        <el-form-item label="角色" prop="roleid">
           <el-select v-model="form.roleid">
             <el-option
               v-for="(item, index) in roleList"
@@ -70,6 +81,7 @@
   </div>
 </template>
 <script>
+import axios from "axios";
 let defaultForm = {
   roleid: "",
   username: "",
@@ -85,8 +97,9 @@ export default {
       info: {
         isShow: false,
         isAdd: true,
-        size: 2,
+        size: 3,
         page: 1,
+        total: 0,
       },
       rules: {
         roleid: [
@@ -99,15 +112,30 @@ export default {
     };
   },
   methods: {
-    async getTableData() {
-      let res = await this.$http.get("/api/userlist", {
+    pageChange(current) {
+      this.info.page = current;
+      this.getTable();
+    },
+    getTotal() {
+      return this.$http.get("/api/usercount");
+    },
+    getTableData() {
+      return this.$http.get("/api/userlist", {
         size: this.info.size,
         page: this.info.page,
       });
-      // console.log(res);
-      if (res.code == 200) {
-        this.tableData = res.list;
-      }
+    },
+    getTable() {
+      //并发请求数据
+      axios.all([this.getTableData(), this.getTotal()]).then(
+        axios.spread((tabData, tot) => {
+          // console.log(tabData, tot);
+          if (tabData.code == 200 && tot.code == 200) {
+            this.tableData = tabData.list ? tabData.list : [];
+            this.info.total = tot.list ? tot.list[0].total : 0;
+          }
+        })
+      );
     },
     addFn() {
       this.info.isShow = true;
@@ -116,11 +144,44 @@ export default {
       this.info.isShow = true;
       this.info.isAdd = false;
       let res = await this.$http.get("/api/userinfo", { uid });
-      console.log(res);
+      if (res.code == 200) {
+        this.form.uid = uid;
+        this.form.roleid = res.list.roleid;
+        this.form.username = res.list.username;
+        this.form.status = this.form.status == 1 ? true : false;
+      }
     },
-    deleteFn(id) {},
-    submitFn() {
+    deleteFn(id) {
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(async () => {
+          let res = await this.$http.post("/api/userdelete", { id });
+          if (res.code == 200) {
+            this.info.page = 1;
+            this.getTable();
+            this.$message.success(res.msg);
+          } else {
+            this.$message.error(res.msg);
+          }
+        })
+        .catch(() => {});
+    },
+    async submitFn() {
       let url = this.info.isAdd ? "/api/useradd" : "/api/useredit";
+      this.form.status = this.form.status ? 1 : 2;
+      let res = await this.$http.post(url, this.form);
+      // console.log(url, this.form);
+      // console.log(res);
+      if (res.code == 200) {
+        this.$message.success(res.msg);
+        this.getTable();
+      } else {
+        this.$message.error(res.msg);
+      }
+      this.info.isShow = false;
     },
     openFn() {
       this.getRoleList();
@@ -136,7 +197,7 @@ export default {
     },
   },
   mounted() {
-    this.getTableData();
+    this.getTable();
   },
 };
 </script>
