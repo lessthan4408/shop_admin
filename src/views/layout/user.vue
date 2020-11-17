@@ -196,7 +196,7 @@ export default {
       this.form = { ...defaultForm };
     },
   },
-  mounted() {
+  created() {
     this.getTable();
   },
 };
