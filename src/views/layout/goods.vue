@@ -53,7 +53,7 @@
             <el-option
               v-for="(item, index) in firstCateList"
               :key="index"
-              :label="item.firstcatename"
+              :label="item.catename"
               :value="item.id"
             ></el-option>
           </el-select>
@@ -64,7 +64,7 @@
             <el-option
               v-for="(item, index) in secondCateList"
               :key="index"
-              :label="item.secondcatename"
+              :label="item.catename"
               :value="item.id"
             ></el-option>
           </el-select>
@@ -103,12 +103,12 @@
         </el-form-item>
 
         <el-form-item label="商品规格值">
-          <el-select v-model="form.specsattr" @change="specsattrChange">
+          <el-select v-model="form.specsattr" multiple>
             <el-option
               v-for="(item, index) in specsattrList"
               :key="index"
-              :label="item.catename"
-              :value="item.id"
+              :label="item"
+              :value="item"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -172,6 +172,7 @@ export default {
       secondCateList: [],
       specsList: [],
       specsattrList: [],
+      // editor: null,
       info: {
         isShow: false,
         isAdd: true,
@@ -185,7 +186,9 @@ export default {
     };
   },
   methods: {
-    handlePreview() {
+    handlePreview(file) {
+      // console.log(file);
+      this.info.dialogImageUrl = file.url;
       this.info.dialogVisible = true;
     },
     picChange(file, fileList) {
@@ -195,6 +198,7 @@ export default {
     },
     firstChange(id) {
       // console.log(id)
+      // this.secondCateList = [];
       this.getCateList(id);
     },
     specsChange(id) {
@@ -202,33 +206,95 @@ export default {
       let item = this.specsList.find((item) => {
         return item.id == id;
       });
-      console.log(item);
-      this.specsattrList = item.attrs;
+      // console.log(item.attrs);
+      this.specsattrList = item.attrs ? item.attrs : [];
       // console.log(this.specsattrList);
     },
-    specsattrChange() {},
     openFn() {
       this.getCateList();
       if (this.info.isAdd) {
         this.getSpecsList();
       }
     },
-    closeFn() {},
-    openedFn() {},
+    closeFn() {
+      this.$refs.file.clearFiles();
+      this.info.isAdd = true;
+      this.info.dialogVisible = false;
+      this.form = { ...defaultForm };
+      this.firstCateList = [];
+      this.secondCateList = [];
+      this.specsList = [];
+      this.specsattrList = [];
+      // this.editor = null;
+    },
+    openedFn() {
+      document.getElementById("editor").innerHTML = "";
+      this.editor = new E("#editor");
+      this.editor.create();
+      this.editor.txt.html(this.form.description);
+    },
     async submitFn() {
       let url = this.info.isAdd ? "/api/goodsadd" : "/api/goodsedit";
+      this.form.description = this.editor.txt.html();
+      this.form.specsattr = this.form.specsattr.join(",");
       // console.log(this.form);
-      // let res = await this.$http;
+      let res = await this.$http.upload(url, this.form);
+      if (res.code == 200) {
+        this.$message.success(res.msg);
+        this.getTableData();
+      }
+      this.info.isShow = false;
     },
     addFn() {
       this.info.isShow = true;
     },
-    editFn(id) {
+    async editFn(id) {
       this.info.isShow = true;
       this.info.isAdd = false;
       this.form.id = id;
+      let res = await this.$http.get("/api/goodsinfo", { id });
+      if (res.code == 200) {
+        console.log(res);
+
+        this.form = { ...res.list, id };
+
+        this.info.fileList = [
+          {
+            name: "",
+            url: "http://localhost:3000" + res.list.img,
+          },
+        ];
+      }
+
+      this.firstChange(res.list.first_cateid);
+      this.form.specsattr = res.list.specsattr.split(",");
+      // this.specsChange(res.list.specsid);
+      // console.log(this.editor);
+      // this.editor.txt.html(this.form.description);
+
+      let res1 = await this.$http.get("/api/specslist");
+      if (res1.code == 200) {
+        // console.log(res1.list);
+        this.specsList = res1.list;
+      }
+      this.getCateList(res.list.first_cateid);
     },
-    deleteFn(id) {},
+    async deleteFn(id) {
+      try {
+        await this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
+        let res = await this.$http.post("/api/goodsdelete", { id });
+        // console.log(res);
+        if (res.code == 200) {
+          this.info.page = 1;
+          this.$message.success(res.msg);
+        }
+        this.getTableData();
+      } catch (error) {}
+    },
     async getTableData() {
       let res = await this.$http.get("/api/goodslist", {
         size: this.info.size,
@@ -247,10 +313,11 @@ export default {
       }
     },
     async getCateList(pid = 0) {
-      let res = await this.$http.get("/api/goodslist", { pid });
-      // console.log(res);
+      let res = await this.$http.get("/api/catelist", { pid });
+      // console.log(res.list);
       if (pid == 0) {
         if (res.code == 200) {
+          // console.log(res.list);
           this.firstCateList = res.list;
         }
       } else {
@@ -278,8 +345,4 @@ export default {
   },
 };
 </script>
-<style lang="stylus">
-.el-button {
-  margin-top: 30px;
-}
-</style>
+<style lang="stylus"></style>

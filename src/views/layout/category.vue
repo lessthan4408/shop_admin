@@ -128,7 +128,7 @@ export default {
         this.form.catename = res.list.catename;
         this.form.status = res.list.status == 1 ? true : false;
         // console.log(this.$domain);
-        console.log(this);
+        // console.log(this);
         if (res.list.img) {
           this.form.img = res.list.img;
           // console.log(this.form.img);
@@ -178,7 +178,9 @@ export default {
       }
       this.info.isShow = false;
     },
-    handlePreview() {
+    handlePreview(file) {
+      // console.log(file);
+      this.info.dialogImageUrl = file.url;
       this.info.dialogVisible = true;
     },
     picChange(file, fileList) {
@@ -193,8 +195,4 @@ export default {
   },
 };
 </script>
-<style lang="stylus">
-.el-button {
-  margin-top: 30px;
-}
-</style>
+<style lang="stylus"></style>

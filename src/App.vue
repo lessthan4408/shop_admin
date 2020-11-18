@@ -17,6 +17,10 @@ html, body {
 #app {
   height: 100%;
 }
+
+.el-button {
+  margin-top: 30px;
+}
 </style>
 
 

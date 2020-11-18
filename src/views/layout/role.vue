@@ -187,8 +187,4 @@ export default {
   },
 };
 </script>
-<style lang="stylus">
-.el-button {
-  margin-top: 30px;
-}
-</style>
+<style lang="stylus"></style>
