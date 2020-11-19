@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import { Message } from 'element-ui'
 
 Vue.use(Router)
 
@@ -81,7 +82,16 @@ router.beforeEach((to, from, next) => {
     if (to.path == '/login') {
       next(false)
     } else {
-      next()
+      let urls = JSON.parse(localStorage.getItem('userinfo')).menus_url.concat(['/', '/index']);
+      let flag = urls.find((item) => {
+        return item == to.path;
+      })
+      if (flag) {
+        next()
+      } else {
+        next(false);
+        Message.error('权限不足');
+      }
     }
   } else {//未登录
     if (to.path == '/login') {

@@ -254,10 +254,8 @@ export default {
       this.form.id = id;
       let res = await this.$http.get("/api/goodsinfo", { id });
       if (res.code == 200) {
-        console.log(res);
-
+        // console.log(res);
         this.form = { ...res.list, id };
-
         this.info.fileList = [
           {
             name: "",
@@ -266,17 +264,17 @@ export default {
         ];
       }
 
-      this.firstChange(res.list.first_cateid);
-      this.form.specsattr = res.list.specsattr.split(",");
-      // this.specsChange(res.list.specsid);
-      // console.log(this.editor);
-      // this.editor.txt.html(this.form.description);
-
       let res1 = await this.$http.get("/api/specslist");
       if (res1.code == 200) {
         // console.log(res1.list);
         this.specsList = res1.list;
       }
+
+      this.getCateList(res.list.first_cateid);
+      this.form.specsattr = res.list.specsattr.split(",");
+      this.specsChange(res.list.specsid);
+      // console.log(this.editor);
+      this.editor.txt.html(this.form.description);
       this.getCateList(res.list.first_cateid);
     },
     async deleteFn(id) {
@@ -342,6 +340,9 @@ export default {
   mounted() {
     this.getTableData();
     this.getTotal();
+  },
+  beforeDestroy() {
+    this.editor = null;
   },
 };
 </script>

@@ -78,7 +78,7 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="info.isShow == false">取 消</el-button>
+        <el-button @click="info.isShow = false">取 消</el-button>
         <el-button type="primary" @click="submitFn">提交</el-button>
       </div>
     </el-dialog>

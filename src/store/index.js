@@ -54,7 +54,7 @@
 // export default store
 import Vue from "vue"
 import Vuex from "vuex"
-import axios from "axios"
+import http from "../utils/http.js"
 import router from "@/router"
 import { Message } from "element-ui"
 Vue.use(Vuex)
@@ -83,7 +83,7 @@ let store = new Vuex.Store({
     },
     actions: {
         login(context, formdata) {
-            axios.post("/api/userlogin", formdata).then((res) => {
+            http.post("/api/userlogin", formdata).then((res) => {
                 if (res.code == 200) {
                     localStorage.setItem("userinfo", JSON.stringify(res.list))
                     context.commit("setinfo", res.list)

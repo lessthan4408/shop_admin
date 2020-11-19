@@ -1,10 +1,27 @@
 import axios from 'axios';
+import qs from 'qs';
+import store from '@/store';
 
+//请求拦截器
+axios.interceptors.request.use((config) => {
+    let token = localStorage.getItem('userinfo') ? JSON.parse(localStorage.getItem('userinfo')).token : '';
+    config.headers["Authorization"] = token;
+    return config;
+}, (error) => {
+    return Promise.reject(error)
+})
+
+//响应拦截器
 axios.interceptors.response.use((res) => {
+    if (res.data.code == 403) {
+        store.commit('logout')
+    }
     return res.data
 }, (error) => {
     return Promise.reject(error)
 })
+
+
 
 function get(url, params = {}) {
     return new Promise((reslove, reject) => {
@@ -25,7 +42,7 @@ function post(url, data = {}) {
         axios({
             method: 'post',
             url,
-            data
+            data: qs.stringify(data)
         }).then((data) => {
             reslove(data)
         }).catch((err) => {
