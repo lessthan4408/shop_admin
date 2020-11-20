@@ -157,7 +157,8 @@ export default {
       this.goodsList = res.list;
     },
     firstChange(id) {
-      // 二级菜单先清空再获取，不然切换时会有默认值
+      // 二级菜单先清空(value:item.id)再获取，不然切换时会有默认值
+      // this.second_cateid = "";
       this.secondList = [];
       this.getList(id);
     },
@@ -235,7 +236,7 @@ export default {
       this.form.endtime = this.time[1] + "";
 
       this.form.status = this.form.status ? 1 : 2;
-      console.log(this.form);
+      // console.log(this.form);
       let res = await this.$http.post(url, this.form);
       if (res.code == 200) {
         this.$message.success(res.msg);

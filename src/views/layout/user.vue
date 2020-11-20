@@ -148,7 +148,7 @@ export default {
         this.form.uid = uid;
         this.form.roleid = res.list.roleid;
         this.form.username = res.list.username;
-        this.form.status = this.form.status == 1 ? true : false;
+        this.form.status = res.list.status == 1 ? true : false;
       }
     },
     deleteFn(id) {
