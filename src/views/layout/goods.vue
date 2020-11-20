@@ -198,7 +198,7 @@ export default {
     },
     firstChange(id) {
       // console.log(id)
-      // this.secondCateList = [];
+      this.secondCateList = [];
       this.getCateList(id);
     },
     specsChange(id) {
@@ -273,9 +273,7 @@ export default {
       this.getCateList(res.list.first_cateid);
       this.form.specsattr = res.list.specsattr.split(",");
       this.specsChange(res.list.specsid);
-      // console.log(this.editor);
       this.editor.txt.html(this.form.description);
-      this.getCateList(res.list.first_cateid);
     },
     async deleteFn(id) {
       try {

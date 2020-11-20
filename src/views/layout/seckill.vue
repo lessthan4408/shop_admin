@@ -157,6 +157,8 @@ export default {
       this.goodsList = res.list;
     },
     firstChange(id) {
+      // 二级菜单先清空再获取，不然切换时会有默认值
+      this.secondList = [];
       this.getList(id);
     },
     secondChange(id) {
